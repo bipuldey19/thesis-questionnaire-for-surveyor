@@ -6,6 +6,6 @@ Pillow
 piexif
 requests
 python-dotenv
-traceback
 streamlit-survey
 streamlit_js_eval
+typing
