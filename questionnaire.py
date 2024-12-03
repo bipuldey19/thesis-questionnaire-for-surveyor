@@ -3,11 +3,13 @@ import streamlit_survey as ss
 import random
 import requests
 import base64
+import traceback
 import piexif
 from streamlit_js_eval import get_geolocation, streamlit_js_eval
 import logging
 from PIL import Image
-import traceback
+from streamlit_modal import Modal
+
 
 # Road Distress Knowledge Test Questions
 ROAD_DISTRESS_QUESTIONS = {
@@ -269,10 +271,123 @@ def capture_image_location(captured_image):
         return None, None
 
 
+
+    with st.expander("Join the Road Revolution! 🚗✨", expanded=True):
+        st.markdown(""" 
+                    
+        🌟 **Make a Difference Today!** 
+        Your observations can help build safer, smoother roads for Rajshahi City. 
+        
+        🛠️ **No Expertise? No Problem!** 
+        Our tool is easy to use—just observe, record, and submit! 
+        
+        🌍 **Be Part of the Change** 
+        Your contributions will shape better road networks and empower citizen-led solutions. 
+        
+        📊 **Access the Data** 
+        All collected data will be publicly available for research and policy improvements. 
+        
+        🚀 **Click to Start Your Journey!** 
+        Let's transform our roads together! 
+        """)
+
+def show_welcome_dialog():
+    # Create an expander with the initial welcome message
+    with st.expander("Join the Road Revolution! 🚗✨", expanded=True):
+        st.markdown("""
+        
+        🌟 **Make a Difference Today!** 
+        Your observations can help build safer, smoother roads for Rajshahi City. 
+        
+        🛠️ **No Expertise? No Problem!** 
+        Our tool is easy to use—just observe, record, and submit! 
+        
+        🌍 **Be Part of the Change** 
+        Your contributions will shape better road networks and empower citizen-led solutions. 
+        
+        📊 **Access the Data** 
+        All collected data will be publicly available for research and policy improvements. 
+        
+        🚀 **Click to Start Your Journey!** 
+        Let's transform our roads together! 
+        """)
+        
+        read_more = st.button("Read More")
+        
+        # Detailed introduction when Read More is clicked
+        if read_more:
+            st.markdown("""
+            ## **Introduction**
+            Hello! We are **Bipul Dey and Towhidul Islam**, students of the **Urban and Regional Planning Department at RUET**. We are conducting an important study to map and analyze road distress points in **Rajshahi City**. Road distress refers to specific damages such as potholes, cracks, and surface wear that make roads unsafe and inconvenient for use.
+
+            To make our roads better, we've developed a **simple tool** that allows anyone—regardless of their knowledge about road engineering—to help us collect valuable data on road distress points.
+
+            We believe that **citizen participation** can transform how road monitoring is done, and your contribution can lead to a safer, more efficient road network for all.
+
+            ## **What Are Road Distress Points?**
+            We are focusing on five types of distress points commonly found on roads:
+
+            1. **Potholes**: Small, bowl-shaped holes in the road caused by wear and water damage.
+               * *Example*: Those annoying bumps your car jolts over during your daily commute.
+
+            2. **Patching**: Repairs made to the road but often uneven or poorly done.
+               * *Example*: The bumpy patchwork that creates discomfort while driving.
+
+            3. **Raveling**: Gradual wearing away of the road surface, leaving loose gravel or cracks.
+               * *Example*: A rough, pebbly road surface where tires lose grip.
+
+            4. **Edge Cracks**: Long cracks forming along the sides of the road.
+               * *Example*: The broken road edges that make walking or cycling unsafe.
+
+            5. **Narrow and Wide Cracks**: Small or large splits in the road, often leading to larger problems.
+               * *Example*: Fine cracks that eventually grow into potholes if left untreated.
+
+            By identifying and recording these issues, we can prioritize repairs, improve road safety, and reduce vehicle wear-and-tear.
+
+            ## **How You Can Participate**
+            We've made it easy for anyone to contribute!
+
+            1. **Step 1: Use Our Tool**
+               * Our tool is simple to use and requires no technical knowledge. You only need to observe and record the distress points using your phone or device.
+
+            2. **Step 2: Follow the Guidelines**
+               * Read our clear descriptions of distress points (potholes, patching, etc.) to identify them correctly.
+               * Use the tool to mark their locations on the map and add brief descriptions.
+
+            3. **Step 3: Submit Your Data**
+               * Once done, submit your observations. It's that easy!
+
+            ## **Why Should You Participate?**
+            1. **Transform Roads in Rajshahi City**: Your efforts will directly help in identifying problem areas, ensuring timely repairs, and creating safer roads for everyone.
+
+            2. **Be a Part of Innovation**: By participating, you're contributing to a revolutionary road monitoring process that empowers citizens and integrates them into urban planning.
+
+            3. **Access to Public Data**: All data collected will be made **publicly available** for visualization, further study, and policymaking.
+               * *Example*: Researchers, policymakers, or even concerned citizens can use the database to analyze trends and propose solutions.
+
+            4. **Shape the Future of Road Networks**: Your contribution will not only improve today's roads but also set a precedent for smarter, citizen-focused road management systems.
+
+            ## **Conclusion**
+            This project is more than a study—it's a chance for every resident of Rajshahi City to contribute to the betterment of their community. Together, we can create a safer, more efficient road network that serves everyone.
+
+            **Join us in this mission to revolutionize road monitoring through the power of citizen participation.**
+
+            Let's pave the way—literally and figuratively—for a better future!
+            """)
+
+
 def main():
     st.set_page_config(
         page_title="Road Distress Surveyor Application", page_icon=":world_map:")
 
+    # Check if this is the first time the app is opened
+    if 'first_visit' not in st.session_state:
+        st.session_state.first_visit = True
+
+    # Show welcome dialog if it's the first visit
+    if st.session_state.first_visit:
+        show_welcome_dialog()
+        
     # Initialize survey with 4 pages and progress bar
     survey = ss.StreamlitSurvey("Road Distress Surveyor Application")
     
@@ -299,9 +414,9 @@ def main():
 
             age = st.number_input(
                 "Age",
-                min_value=18,
+                min_value=16,
                 max_value=80,
-                help="You must be at least 18 years old"
+                help="You must be at least 16 years old"
             )
             st.session_state.form_data['age'] = age
 
@@ -424,6 +539,7 @@ def main():
                     "Upload Image", type=['jpg', 'jpeg', 'png'], key="gps_image_uploader")
                 if uploaded_image:
                     uploaded_image_url = upload_image_to_imgbb(uploaded_image)
+                    st.toast('Image uploaded successfully', icon='✅')
                     st.session_state.form_data['uploaded_image_url'] = uploaded_image_url
                     try:
                         gps_data = extract_gps_from_image(uploaded_image)
@@ -443,7 +559,7 @@ def main():
                                     'longitude': longitude
                                 }
                         else:
-                            st.warning("No GPS data found in the image")
+                            st.warning("No GPS data found in the image", icon="🚨")
             
                     except Exception as e:
                         st.error(f"Error processing image: {e}")
@@ -463,6 +579,7 @@ def main():
                         st.error(f"GPS capture error: {gps_error}")
                         
                     captured_image_url = upload_image_to_imgbb(captured_image)
+                    st.toast("Image captured and uploaded successfully", icon='✅')
                     st.session_state.form_data['captured_image_url'] = captured_image_url
 
             # Distress Point Assessment

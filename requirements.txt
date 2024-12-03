@@ -8,4 +8,4 @@ requests
 python-dotenv
 streamlit-survey
 streamlit_js_eval
-typing
+streamlit_modal
